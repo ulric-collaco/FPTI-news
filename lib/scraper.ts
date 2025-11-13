@@ -1,11 +1,13 @@
 import * as cheerio from "cheerio";
 import axios from "axios";
 import { DataSource } from "./data-sources";
+import { parseIndianDate, isWithinDays } from "./date-utils";
 
 export interface ScrapedItem {
   title: string;
   url: string;
   date?: string;
+  parsedDate?: Date;
   source: string;
   category: string;
 }
@@ -313,7 +315,8 @@ function scrapeGeneric(
 
 export async function scrapeMultipleSources(
   sources: DataSource[],
-  maxItemsPerSource: number = 3
+  maxItemsPerSource: number = 3,
+  filterDays: number = 14
 ): Promise<ScrapedItem[]> {
   const results = await Promise.allSettled(
     sources.map((source) => scrapeDataSource(source, maxItemsPerSource))
@@ -332,5 +335,24 @@ export async function scrapeMultipleSources(
     }
   });
 
-  return allItems;
+  // Parse dates and filter recent items
+  const itemsWithDates = allItems.map(item => {
+    if (item.date) {
+      const parsed = parseIndianDate(item.date);
+      if (parsed) {
+        item.parsedDate = parsed;
+      }
+    }
+    return item;
+  });
+
+  // Filter to items within specified days, or items without dates (keep as potentially recent)
+  const filtered = itemsWithDates.filter(item => {
+    if (!item.parsedDate) return true; // Keep items without parseable dates
+    return isWithinDays(item.parsedDate, filterDays);
+  });
+
+  console.log(`[Scraper] Filtered ${filtered.length}/${allItems.length} items within ${filterDays} days`);
+
+  return filtered;
 }

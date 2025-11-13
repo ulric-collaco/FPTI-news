@@ -1,7 +1,13 @@
 {
   "name": "fpti-news",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Indian Financial & Tax Regulatory Intelligence Platform with AI-powered action items",
   "private": true,
+  "author": "Ulric Collaco",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ulric-collaco/FPTI-news"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -13,7 +19,8 @@
     "cheerio": "^1.1.2",
     "next": "14.2.5",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "resend": "^6.4.2"
   },
   "devDependencies": {
     "@types/node": "20.11.30",

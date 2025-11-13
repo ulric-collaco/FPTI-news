@@ -60,23 +60,44 @@ export async function GET() {
         ].includes(source.name)
       );
 
-      const items = await scrapeMultipleSources(prioritySources, 3);
+      const items = await scrapeMultipleSources(prioritySources, 3, 14); // Filter to last 14 days
 
       if (items.length > 0) {
-        // Format scraped items as markdown bullets
-        const text = items
+        // Sort by newest first (items with dates first, then by date descending)
+        const sortedItems = [...items].sort((a, b) => {
+          if (!a.parsedDate && !b.parsedDate) return 0;
+          if (!a.parsedDate) return 1;
+          if (!b.parsedDate) return -1;
+          return b.parsedDate.getTime() - a.parsedDate.getTime();
+        });
+
+        // Format scraped items with metadata for frontend
+        const text = sortedItems
           .map((item) => {
             const date = item.date ? ` (${item.date})` : "";
             return `- [${item.title}${date}](${item.url}): ${item.source}`;
           })
           .join("\n");
 
-        console.log(`[News API] Successfully scraped ${items.length} items`);
+        console.log(`[News API] Successfully scraped ${sortedItems.length} items (sorted by date)`);
+        
+        // Return items with metadata for action item analysis
+        const response = {
+          text,
+          items: sortedItems.map(item => ({
+            title: item.title,
+            url: item.url,
+            date: item.date,
+            parsedDate: item.parsedDate?.toISOString(),
+            source: item.source,
+            category: item.category
+          }))
+        };
         
         // Cache the response
         cachedResponse = { text, timestamp: Date.now() };
         
-        return NextResponse.json({ text }, { status: 200, headers: noStore() });
+        return NextResponse.json(response, { status: 200, headers: noStore() });
       }
     } catch (scrapeError: any) {
       console.warn("[News API] Scraping failed, falling back to AI:", scrapeError.message);
