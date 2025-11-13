@@ -22,15 +22,15 @@ export default function RootLayout({
       </head>
       <body style={{
         fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-        background: '#0b1020',
-        color: '#e6edf3',
+        background: '#000',
+        color: '#fff',
         margin: 0,
         minHeight: '100vh'
       }}>
         <main style={{
-          maxWidth: 800,
+          maxWidth: 900,
           margin: '0 auto',
-          padding: '2rem 1rem 4rem'
+          padding: '3rem 1.5rem 4rem'
         }}>
           {children}
         </main>

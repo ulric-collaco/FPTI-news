@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic"; // Always fetch fresh on each visit
 export const runtime = "nodejs"; // Ensure Node runtime for compatibility
 
-const PROMPT = ` DO NOT THINK 
+const PROMPT = `DO NOT USE THINKING MODE
 You are an AI assistant specializing in Indian financial and tax regulations. Please provide a concise summary of recent (last 7-14 days) significant developments in Indian financial laws, tax regulations, government notifications, and compliance requirements.
 
 Focus on:
@@ -12,10 +12,15 @@ Focus on:
 - Announcement or effective dates
 - Major implications for businesses, taxpayers, or financial advisors
 
-Format your response as a chronological bullet list (newest first), with each point covering one development. Use this format:
-- [Brief headline]: [Key details including regulatory body, date if known, and primary implication]
+Format your response as a chronological bullet list (newest first), with each point covering one development. Use this EXACT format:
+- [Brief headline](URL): Key details including regulatory body, date if known, and primary implication
 
-Provide 5-8 bullet points. Keep tone formal, concise, and information-dense. Only include actual regulatory/compliance news, not market commentary or opinions.`;
+IMPORTANT: 
+- Include actual working URLs from reliable Indian news sources (Economic Times, LiveMint, Business Standard, Moneycontrol, etc.)
+- Each bullet MUST have a clickable link in markdown format: [Headline Text](https://actual-url.com)
+- Provide 5-8 bullet points
+- Keep tone formal, concise, and information-dense
+- Only include actual regulatory/compliance news, not market commentary or opinions`;
 
 type GeminiResponse = {
   candidates?: Array<{
