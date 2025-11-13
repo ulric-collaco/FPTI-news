@@ -66,7 +66,7 @@ export default function HomePage() {
         <div style={cardStyle}>
           <ul style={{ margin: 0, paddingLeft: "1.2rem", display: "grid", gap: ".6rem" }}>
             {bullets.map((b, i) => (
-              <li key={i} style={{ lineHeight: 1.4 }}>{b}</li>
+              <li key={i} style={{ lineHeight: 1.4 }} dangerouslySetInnerHTML={{ __html: parseMarkdown(b) }} />
             ))}
           </ul>
         </div>
@@ -90,13 +90,37 @@ function parseBullets(text: string): string[] {
     .map((l) => l.trim())
     .filter(Boolean);
 
-  const bulletLines = lines.filter((l) => /^[-•\u2022]/.test(l));
+  const bulletLines = lines.filter((l) => /^[-•\u2022\*]/.test(l));
   if (bulletLines.length > 0) {
-    return bulletLines.map((l) => l.replace(/^[-•\u2022]\s*/, "").trim());
+    return bulletLines.map((l) => l.replace(/^[-•\u2022\*]\s*/, "").trim());
   }
 
   const paragraphs = text.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
   return paragraphs;
+}
+
+function parseMarkdown(text: string): string {
+  // Escape HTML first to prevent XSS
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Bold: **text** or __text__
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+
+  // Italic: *text* or _text_
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+
+  // Inline code: `code`
+  html = html.replace(/`(.+?)`/g, '<code style="background:#1a2332;padding:2px 6px;border-radius:4px;font-size:0.9em">$1</code>');
+
+  // Links: [text](url)
+  html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#6aa1ff;text-decoration:underline">$1</a>');
+
+  return html;
 }
 
 async function safeError(res: Response): Promise<string | null> {
