@@ -55,20 +55,21 @@ export async function POST(request: Request) {
     // Generate email HTML
     const html = generateEmailHTML(body.regulation, body.actionItems);
 
+    // Determine verified sender (prefer env, fallback to Resend onboarding)
+    const from = process.env.RESEND_FROM || "FPTI News <onboarding@resend.dev>";
+
     // Send email
     const { data, error } = await resend.emails.send({
-      from: "FPTI Regulatory News <fptiregnews@swarchuri.me>", // Change display name here
+      from,
       to: body.email,
       subject: `📋 Regulation Update: ${body.regulation.title}`,
       html: html,
     });
 
     if (error) {
-      console.error("[Email API] Resend error:", error);
-      return NextResponse.json(
-        { error: "Failed to send email" },
-        { status: 500 }
-      );
+      console.error("[Email API] Resend error:", JSON.stringify(error, null, 2));
+      const message = (error as any)?.message || (typeof error === 'string' ? error : "Failed to send email");
+      return NextResponse.json({ error: message }, { status: 500 });
     }
 
     console.log(`[Email API] Email sent successfully to ${body.email}`);
@@ -79,11 +80,8 @@ export async function POST(request: Request) {
       emailId: data?.id,
     });
   } catch (error: any) {
-    console.error("[Email API] Error:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to send email" },
-      { status: 500 }
-    );
+    console.error("[Email API] Error:", error?.stack || error);
+    return NextResponse.json({ error: error?.message || "Failed to send email" }, { status: 500 });
   }
 }
 
