@@ -30,7 +30,6 @@ export default function HomePage() {
   const [actionItems, setActionItems] = useState<Map<string, ActionItems>>(new Map());
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [emailModalItem, setEmailModalItem] = useState<NewsItem | null>(null);
   const [userEmail, setUserEmail] = useState<string>("");
   const [emailSending, setEmailSending] = useState<boolean>(false);
@@ -174,7 +173,6 @@ export default function HomePage() {
             const url = extractUrl(b);
             const newsItem = newsItems.find(item => item.url === url);
             const actions = url ? actionItems.get(url) : null;
-            const isExpanded = expandedItem === url;
             
             return (
               <div key={i} style={bulletCardStyle}>
@@ -202,7 +200,6 @@ export default function HomePage() {
                     textDecoration: "none",
                     color: "inherit",
                     display: "block",
-                    marginBottom: actions ? "1rem" : 0,
                   }}
                 >
                   <div
@@ -210,93 +207,21 @@ export default function HomePage() {
                     dangerouslySetInnerHTML={{ __html: parseMarkdown(b) }}
                   />
                 </a>
-                
-                {actions && (
-                  <div style={{ borderTop: "1px solid #222", paddingTop: "1rem" }}>
-                    <button
-                      onClick={() => setExpandedItem(isExpanded ? null : url)}
-                      style={{
-                        ...buttonStyle,
-                        fontSize: "0.85rem",
-                        padding: ".5rem .75rem",
-                        background: isExpanded ? "#111" : "#fff",
-                        color: isExpanded ? "#fff" : "#000",
-                        border: isExpanded ? "1px solid #333" : "none",
-                        marginBottom: isExpanded ? "1rem" : 0,
-                      }}
-                    >
-                      {isExpanded ? "Hide" : "Show"} Action Items ✨
-                    </button>
-                    
-                    {isExpanded && (
-                      <div style={{ fontSize: "0.9rem", lineHeight: 1.6 }}>
-                        {/* Email Me Button */}
-                        <button
-                          onClick={() => setEmailModalItem(newsItem || null)}
-                          style={{
-                            ...buttonStyle,
-                            fontSize: "0.85rem",
-                            padding: ".5rem .75rem",
-                            background: "#007bff",
-                            marginBottom: "1rem",
-                          }}
-                        >
-                          📧 Email Me This
-                        </button>
 
-                        {actions.summary && (
-                          <div style={{ marginBottom: "1rem", color: "#aaa", fontStyle: "italic" }}>
-                            {actions.summary}
-                          </div>
-                        )}
-                        
-                        {actions.affected.length > 0 && (
-                          <div style={{ marginBottom: "1rem" }}>
-                            <strong style={{ color: "#fff" }}>👥 Who's Affected:</strong>
-                            <ul style={{ margin: ".5rem 0 0 1.25rem", paddingLeft: 0 }}>
-                              {actions.affected.map((a, idx) => (
-                                <li key={idx} style={{ color: "#ccc" }}>{a}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        
-                        {actions.deadlines.length > 0 && (
-                          <div style={{ marginBottom: "1rem" }}>
-                            <strong style={{ color: "#fff" }}>📅 Deadlines:</strong>
-                            <ul style={{ margin: ".5rem 0 0 1.25rem", paddingLeft: 0 }}>
-                              {actions.deadlines.map((d, idx) => (
-                                <li key={idx} style={{ color: "#ffd700" }}>{d}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        
-                        {actions.actions.length > 0 && (
-                          <div style={{ marginBottom: "1rem" }}>
-                            <strong style={{ color: "#fff" }}>✅ Action Steps:</strong>
-                            <ul style={{ margin: ".5rem 0 0 1.25rem", paddingLeft: 0 }}>
-                              {actions.actions.map((a, idx) => (
-                                <li key={idx} style={{ color: "#ccc" }}>{a}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        
-                        {actions.relatedRegulations.length > 0 && (
-                          <div>
-                            <strong style={{ color: "#fff" }}>📚 Related Regulations:</strong>
-                            <ul style={{ margin: ".5rem 0 0 1.25rem", paddingLeft: 0 }}>
-                              {actions.relatedRegulations.map((r, idx) => (
-                                <li key={idx} style={{ color: "#888" }}>{r}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
+                {/* Always show Email Me button */}
+                <div style={{ borderTop: "1px solid #222", paddingTop: "1rem" }}>
+                  <button
+                    onClick={() => setEmailModalItem(newsItem || null)}
+                    style={{
+                      ...buttonStyle,
+                      fontSize: "0.85rem",
+                      padding: ".5rem .75rem",
+                      background: "#007bff",
+                    }}
+                  >
+                    📧 Email Me This
+                  </button>
+                </div>
               </div>
             );
           })}
