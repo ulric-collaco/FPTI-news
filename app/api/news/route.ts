@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 
-export const dynamic = "force-dynamic"; // Always fetch fresh on each visit
+// Cache this route's result for 1 hour on Vercel's incremental cache/CDN
+export const revalidate = 3600;
 export const runtime = "nodejs"; // Ensure Node runtime for compatibility
 
 const PROMPT = `DO NOT USE THINKING MODE
@@ -31,16 +33,38 @@ type GeminiResponse = {
   error?: { code?: number; message?: string };
 };
 
+type SummariesPayload = {
+  text: string;
+  updatedAt: string; // ISO timestamp when cache was refreshed
+};
+
+// Cached function: first request within the hour calls Gemini,
+// subsequent requests are served from cache (per region) without hitting Gemini
+const getCachedSummaries = unstable_cache(
+  async (): Promise<SummariesPayload> => {
+    const text = await generateSummaries(PROMPT);
+    return { text, updatedAt: new Date().toISOString() };
+  },
+  ["news-summaries", process.env.GEMINI_MODEL_ID || "default"],
+  { revalidate: 3600 }
+);
+
 export async function GET() {
   try {
-    const text = await generateSummaries(PROMPT);
-    return NextResponse.json({ text }, { status: 200, headers: noStore() });
+    const payload = await getCachedSummaries();
+    return NextResponse.json(
+      payload,
+      {
+        status: 200,
+        headers: cacheHeaders(),
+      }
+    );
   } catch (err: any) {
     const message = err?.message || "Failed to generate summaries";
     const status = err?.statusCode && Number.isInteger(err.statusCode) ? err.statusCode : 500;
     return NextResponse.json(
       { error: message },
-      { status, headers: noStore() }
+      { status, headers: cacheHeadersError() }
     );
   }
 }
@@ -139,9 +163,16 @@ async function readErrorMessage(res: Response): Promise<string | null> {
     }
   }
 }
-
-function noStore() {
+function cacheHeaders() {
+  // Cache at the CDN (s-maxage) for 1 hour, allow brief SWR
   return {
-    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=60",
+  } as Record<string, string>;
+}
+
+function cacheHeadersError() {
+  // Do not cache errors, but still be explicit
+  return {
+    "Cache-Control": "no-store",
   } as Record<string, string>;
 }
