@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { analyzeRegulation, ActionItems } from "@/lib/huggingface";
+import { analyzeRegulation } from "@/lib/huggingface";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

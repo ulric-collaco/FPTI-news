@@ -8,6 +8,42 @@ export interface ActionItems {
 
 const HF_API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2";
 
+function generateFallbackAnalysis(source: string): ActionItems {
+  const affected: string[] = [];
+  const actions: string[] = [];
+  const relatedRegulations: string[] = [];
+  
+  // Smart defaults based on source
+  if (source.includes("Income Tax") || source.includes("CBDT")) {
+    affected.push("Individual taxpayers", "Tax professionals", "Businesses");
+    actions.push("Review notification details", "Consult with tax advisor", "Update compliance procedures");
+    relatedRegulations.push("Income Tax Act, 1961");
+  } else if (source.includes("GST") || source.includes("CBIC")) {
+    affected.push("GST-registered businesses", "Tax practitioners");
+    actions.push("Review GST portal for updates", "Assess impact on current filings", "Update GST compliance");
+    relatedRegulations.push("GST Act");
+  } else if (source.includes("RBI")) {
+    affected.push("Banks", "Financial institutions", "NBFCs");
+    actions.push("Review RBI circular", "Update internal policies", "Ensure compliance by deadline");
+    relatedRegulations.push("Banking Regulation Act", "RBI guidelines");
+  } else if (source.includes("SEBI")) {
+    affected.push("Listed companies", "Stock brokers", "Investors");
+    actions.push("Review SEBI circular", "Update disclosure requirements", "Assess impact on operations");
+    relatedRegulations.push("SEBI regulations", "Securities laws");
+  } else {
+    affected.push("Businesses", "Compliance officers");
+    actions.push("Review official notification", "Assess applicability", "Consult legal advisor");
+  }
+
+  return {
+    affected,
+    deadlines: ["Check official notification for specific dates"],
+    actions,
+    relatedRegulations,
+    summary: "Regulatory update requiring attention",
+  };
+}
+
 export async function analyzeRegulation(
   title: string,
   source: string,
@@ -88,48 +124,13 @@ Format as valid JSON only, no markdown:
     }
 
     // Fallback if JSON parsing fails
-    return generateFallbackAnalysis(title, source);
+    return generateFallbackAnalysis(source);
     
   } catch (error: any) {
     console.error("[HF API] Analysis error:", error.message);
-    return generateFallbackAnalysis(title, source);
-  }
+    return generateFallbackAnalysis(source);
 }
 
-function generateFallbackAnalysis(title: string, source: string): ActionItems {
-  const affected: string[] = [];
-  const actions: string[] = [];
-  const relatedRegulations: string[] = [];
-  
-  // Smart defaults based on source
-  if (source.includes("Income Tax") || source.includes("CBDT")) {
-    affected.push("Individual taxpayers", "Tax professionals", "Businesses");
-    actions.push("Review notification details", "Consult with tax advisor", "Update compliance procedures");
-    relatedRegulations.push("Income Tax Act, 1961");
-  } else if (source.includes("GST") || source.includes("CBIC")) {
-    affected.push("GST-registered businesses", "Tax practitioners");
-    actions.push("Review GST portal for updates", "Assess impact on current filings", "Update GST compliance");
-    relatedRegulations.push("GST Act");
-  } else if (source.includes("RBI")) {
-    affected.push("Banks", "Financial institutions", "NBFCs");
-    actions.push("Review RBI circular", "Update internal policies", "Ensure compliance by deadline");
-    relatedRegulations.push("Banking Regulation Act", "RBI guidelines");
-  } else if (source.includes("SEBI")) {
-    affected.push("Listed companies", "Stock brokers", "Investors");
-    actions.push("Review SEBI circular", "Update disclosure requirements", "Assess impact on operations");
-    relatedRegulations.push("SEBI regulations", "Securities laws");
-  } else {
-    affected.push("Businesses", "Compliance officers");
-    actions.push("Review official notification", "Assess applicability", "Consult legal advisor");
-  }
-
-  return {
-    affected,
-    deadlines: ["Check official notification for specific dates"],
-    actions,
-    relatedRegulations,
-    summary: "Regulatory update requiring attention",
-  };
 }
 
 export async function analyzeBatch(
@@ -152,7 +153,7 @@ export async function analyzeBatch(
       if (result.status === "fulfilled") {
         results.set(key, result.value);
       } else {
-        results.set(key, generateFallbackAnalysis(item.title, item.source));
+        results.set(key, generateFallbackAnalysis(item.source));
       }
     });
     

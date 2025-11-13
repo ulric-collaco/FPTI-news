@@ -69,6 +69,7 @@ function scrapeIncomeTaxSite(
   
   // Income Tax site uses SharePoint lists
   $("table tr, .ms-listviewtable tr").each((i, row) => {
+    void i;
     if (items.length >= maxItems) return false;
     
     const $row = $(row);
@@ -106,6 +107,7 @@ function scrapeRBISite(
   
   // RBI uses table structure
   $("table tr").each((i, row) => {
+    void i;
     if (items.length >= maxItems) return false;
     
     const $row = $(row);
@@ -142,6 +144,7 @@ function scrapeCBICSite(
   
   // CBIC site structure
   $("table a, .contentpaneopen a, ul li a").each((i, elem) => {
+    void i;
     if (items.length >= maxItems) return false;
     
     const $link = $(elem);
@@ -176,6 +179,7 @@ function scrapeSEBISite(
   
   // SEBI circulars page
   $("table tr").each((i, row) => {
+    void i;
     if (items.length >= maxItems) return false;
     
     const $row = $(row);
@@ -212,6 +216,7 @@ function scrapeMahaGSTSite(
   
   // Maharashtra GST site
   $("article, .notification-item, .update-item").each((i, elem) => {
+    void i;
     if (items.length >= maxItems) return false;
     
     const $elem = $(elem);
@@ -248,6 +253,7 @@ function scrapePIBSite(
   
   // PIB press releases
   $(".content-area a, table tr").each((i, elem) => {
+    void i;
     if (items.length >= maxItems) return false;
     
     const $elem = $(elem);
@@ -281,6 +287,7 @@ function scrapeGeneric(
   
   // Generic scraper - look for news/notification patterns
   $("a").each((i, elem) => {
+    void i;
     if (items.length >= maxItems) return false;
     
     const $link = $(elem);
